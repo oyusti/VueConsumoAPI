@@ -54,13 +54,7 @@ watch(search, () => {
 const getData = async () => {
   //loading = true // Activar el loader
   await axios
-    .get(
-      'http://127.0.0.1:8000/api/v1/categories?perPage=7' +
-        '&page=' +
-        page.value +
-        '&filter[name]=' +
-        search.value
-    )
+    .get('/v1/categories?perPage=7' + '&page=' + page.value + '&filter[name]=' + search.value)
     .then((response) => {
       categories.value = response.data.data
       pagination_links.value = response.data.meta.links
@@ -82,9 +76,7 @@ function deleteCategory(category) {
       console.log(selectedCategory.value)
       ;(async () => {
         try {
-          const response = await axios.delete(
-            'http://127.0.0.1:8000/api/v1/categories/' + category.id
-          )
+          const response = await axios.delete('/v1/categories/' + category.id)
           console.log(response)
           Swal.fire({
             title: 'Eliminado!',

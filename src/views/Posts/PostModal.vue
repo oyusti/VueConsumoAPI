@@ -70,7 +70,7 @@ function defineAction() {
 
 const handleSubmit = async () => {
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/v1/posts', formData.value)
+    const response = await axios.post('/v1/posts', formData.value)
     console.log(response)
     Swal.fire({
       title: 'Excelente!',
@@ -93,10 +93,7 @@ const handleSubmit = async () => {
 
 const handleUpdate = async () => {
   try {
-    const response = await axios.put(
-      'http://127.0.0.1:8000/api/v1/posts/' + formData.value.id,
-      formData.value
-    )
+    const response = await axios.put('/v1/posts/' + formData.value.id, formData.value)
     console.log(response)
     Swal.fire({
       title: 'Excelente!',
