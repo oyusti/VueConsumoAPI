@@ -70,7 +70,7 @@ function defineAction() {
 
 const handleSubmit = async () => {
   try {
-    const response = await axios.post('/v1/posts', formData.value)
+    const response = await axios.post('/api/v1/posts', formData.value)
     console.log(response)
     Swal.fire({
       title: 'Excelente!',
@@ -93,7 +93,7 @@ const handleSubmit = async () => {
 
 const handleUpdate = async () => {
   try {
-    const response = await axios.put('/v1/posts/' + formData.value.id, formData.value)
+    const response = await axios.put('/api/v1/posts/' + formData.value.id, formData.value)
     console.log(response)
     Swal.fire({
       title: 'Excelente!',
@@ -118,16 +118,12 @@ const emit = defineEmits(['update:isVisible', 'update:editMode', 'update:postDat
 
 const getCategory = async () => {
   //loading = true // Activar el loader
-  await axios
-    .get('http://127.0.0.1:8000/api/v1/categories')
-    .then((response) => (categories.value = response.data.data))
+  await axios.get('/api/v1/categories').then((response) => (categories.value = response.data.data))
 }
 
 const getUsers = async () => {
   //loading = true // Activar el loader
-  await axios
-    .get('http://127.0.0.1:8000/api/v1/users')
-    .then((response) => (users.value = response.data.data))
+  await axios.get('/api/v1/users').then((response) => (users.value = response.data.data))
 }
 
 function closeModal() {

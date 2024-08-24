@@ -44,7 +44,7 @@ function defineAction() {
 }
 const handleSubmit = async () => {
   try {
-    const response = await axios.post('/v1/categories', formData.value)
+    const response = await axios.post('/api/v1/categories', formData.value)
     console.log(response)
     Swal.fire({
       title: 'Excelente!',
@@ -60,7 +60,7 @@ const handleSubmit = async () => {
 
 const handleUpdate = async () => {
   try {
-    const response = await axios.put('/v1/categories/' + formData.value.id, formData.value)
+    const response = await axios.put('/api/v1/categories/' + formData.value.id, formData.value)
     console.log(response)
     Swal.fire({
       title: 'Excelente!',

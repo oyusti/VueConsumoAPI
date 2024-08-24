@@ -8,18 +8,46 @@ const disabled = ref(false)
 
 const login = async () => {
   disabled.value = true
-  await axios
-    .post('/v1/login', {
-      gran_type: 'password',
-      client_id: '9ccb9702-b267-4e8f-bff5-4fd228158590',
-      client_secret: 'H9cQQmweLgsRW721EJcC4kTDNDF3kFBLZ3G4xBps',
-      email: email.value,
-      password: password.value
-    })
-    .then((response) => {
-      console.log(response.data)
-      disabled.value = false
-    })
+  try {
+    const loginResponse = await axios.post(
+      '/api/v1/login',
+      {
+        email: email.value,
+        password: password.value
+      },
+      {
+        headers: {
+          Accept: 'application/json'
+        }
+      }
+    )
+    if (loginResponse.status === 200) {
+      const tokenResponse = await axios.post(
+        '/oauth/token',
+        {
+          grant_type: 'password',
+          client_id: '9ccb9702-b267-4e8f-bff5-4fd228158590',
+          client_secret: 'H9cQQmweLgsRW721EJcC4kTDNDF3kFBLZ3G4xBps',
+          username: email.value,
+          password: password.value
+        },
+        {
+          headers: {
+            Accept: 'application/json'
+          }
+        }
+      )
+      if (tokenResponse.status === 200) {
+        console.log(tokenResponse.data)
+      } else {
+        console.log('Error en el token')
+      }
+    }
+  } catch (error) {
+    console.error(error)
+  } finally {
+    disabled.value = false
+  }
 }
 </script>
 
@@ -63,6 +91,7 @@ const login = async () => {
                   placeholder="name@company.com"
                   required=""
                 />
+                <label for="">{{ email }}</label>
               </div>
               <div>
                 <label
@@ -79,6 +108,7 @@ const login = async () => {
                   class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   required=""
                 />
+                <label for="">{{ password }}</label>
               </div>
               <div class="flex items-center justify-between">
                 <div class="flex items-start">

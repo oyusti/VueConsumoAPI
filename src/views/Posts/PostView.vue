@@ -16,7 +16,7 @@ const selectedPost = ref({})
 
 const getData = async () => {
   //loading = true // Activar el loader
-  await axios.get('/v1/posts').then((response) => (posts.value = response.data.data))
+  await axios.get('/api/v1/posts').then((response) => (posts.value = response.data.data))
 }
 
 /* const statusText = computed((post) => {
@@ -49,7 +49,7 @@ function deleteCategory(post) {
       console.log(selectedPost.value)
       ;(async () => {
         try {
-          const response = await axios.delete('/v1/posts/' + post.id)
+          const response = await axios.delete('/api/v1/posts/' + post.id)
           console.log(response)
           Swal.fire({
             title: 'Eliminado!',
