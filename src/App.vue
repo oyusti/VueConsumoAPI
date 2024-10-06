@@ -1,10 +1,22 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { onMounted } from 'vue'
 //import { ref } from 'vue'
 //import logo from './assets/logo_codeate.png'
 //import HelloWorld from './components/HelloWorld.vue'
 
 //const logoImage = ref(logo)
+
+const authStore = useAuthStore()
+
+/* onMounted(() => {
+  authStore.getUser()
+}) */
+
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0
+}
 </script>
 
 <template>
@@ -20,12 +32,20 @@ import { RouterLink, RouterView } from 'vue-router'
         >
       </RouterLink>
       <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-        <div class="flex flex-wrap gap-5">
+        <div v-if="isEmpty(authStore.user)" class="flex flex-wrap gap-5">
           <RouterLink
-            to="/login"
+            :to="{ name: 'login' }"
             class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
             >Login</RouterLink
           >
+        </div>
+        <div v-else class="flex flex-wrap gap-5">
+          <p>{{ authStore.user.name }} /</p>
+          <div>
+            <form @submit.prevent="authStore.logout">
+              <button>Logout</button>
+            </form>
+          </div>
         </div>
       </div>
       <div
@@ -37,7 +57,7 @@ import { RouterLink, RouterView } from 'vue-router'
         >
           <li>
             <RouterLink
-              to="/"
+              :to="{ name: 'home' }"
               class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
               aria-current="page"
               >Home</RouterLink
@@ -45,23 +65,30 @@ import { RouterLink, RouterView } from 'vue-router'
           </li>
           <li>
             <RouterLink
-              to="/categories"
+              :to="{ name: 'categories' }"
               class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
               >Categorias</RouterLink
             >
           </li>
           <li>
             <RouterLink
-              to="/posts"
+              :to="{ name: 'posts' }"
               class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
               >Posts</RouterLink
             >
           </li>
           <li>
             <RouterLink
-              to="/about"
+              :to="{ name: 'about' }"
               class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
               >About</RouterLink
+            >
+          </li>
+          <li>
+            <RouterLink
+              :to="{ name: 'create' }"
+              class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+              >New Post</RouterLink
             >
           </li>
         </ul>

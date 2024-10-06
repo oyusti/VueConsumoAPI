@@ -1,54 +1,23 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { RouterLink } from 'vue-router'
-import axios from 'axios'
-const email = ref('')
-const password = ref('')
-const disabled = ref(false)
+import { useAuthStore } from '@/stores/auth'
 
-const login = async () => {
-  disabled.value = true
-  try {
-    const loginResponse = await axios.post(
-      '/api/v1/login',
-      {
-        email: email.value,
-        password: password.value
-      },
-      {
-        headers: {
-          Accept: 'application/json'
-        }
-      }
-    )
-    if (loginResponse.status === 200) {
-      const tokenResponse = await axios.post(
-        '/oauth/token',
-        {
-          grant_type: 'password',
-          client_id: '9ccb9702-b267-4e8f-bff5-4fd228158590',
-          client_secret: 'H9cQQmweLgsRW721EJcC4kTDNDF3kFBLZ3G4xBps',
-          username: email.value,
-          password: password.value
-        },
-        {
-          headers: {
-            Accept: 'application/json'
-          }
-        }
-      )
-      if (tokenResponse.status === 200) {
-        console.log(tokenResponse.data)
-      } else {
-        console.log('Error en el token')
-      }
-    }
-  } catch (error) {
-    console.error(error)
-  } finally {
-    disabled.value = false
-  }
+const formDataLogin = reactive({
+  email: '',
+  password: ''
+})
+
+//const disabled = ref(false)
+const authStore = useAuthStore()
+
+const handleAuthenticated = async () => {
+  await authStore.authenticate('login', formDataLogin)
 }
+
+onMounted(() => {
+  authStore.errors = {}
+})
 </script>
 
 <template>
@@ -75,7 +44,7 @@ const login = async () => {
             >
               Login
             </h1>
-            <form @click="login()" class="space-y-4 md:space-y-6">
+            <form @submit.prevent="handleAuthenticated" class="space-y-4 md:space-y-6">
               <div>
                 <label
                   for="email"
@@ -83,15 +52,16 @@ const login = async () => {
                   >email</label
                 >
                 <input
-                  type="email"
+                  type="text"
                   name="email"
-                  v-model="email"
+                  v-model="formDataLogin.email"
                   id="email"
                   class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="name@company.com"
-                  required=""
                 />
-                <label for="">{{ email }}</label>
+                <p v-if="authStore.errors.email" class="text-red-500">
+                  {{ authStore.errors.email[0] }}
+                </p>
               </div>
               <div>
                 <label
@@ -101,16 +71,17 @@ const login = async () => {
                 >
                 <input
                   type="password"
-                  v-model="password"
+                  v-model="formDataLogin.password"
                   name="password"
                   id="password"
                   placeholder="••••••••"
                   class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  required=""
                 />
-                <label for="">{{ password }}</label>
+                <p v-if="authStore.errors.password" class="text-red-500">
+                  {{ authStore.errors.password[0] }}
+                </p>
               </div>
-              <div class="flex items-center justify-between">
+              <!-- <div class="flex items-center justify-between">
                 <div class="flex items-start">
                   <div class="flex items-center h-5">
                     <input
@@ -132,7 +103,7 @@ const login = async () => {
                   class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
                   >Olvido el password?</a
                 >
-              </div>
+              </div> -->
               <button
                 type="submit"
                 class="w-full text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
@@ -142,7 +113,7 @@ const login = async () => {
               <p class="text-sm font-light text-gray-500 dark:text-gray-400">
                 Todavia no tiene una cuenta?
                 <RouterLink
-                  to="/register"
+                  :to="{ name: 'register' }"
                   class="font-medium text-primary-600 hover:underline dark:text-primary-500"
                   >Registrese</RouterLink
                 >
