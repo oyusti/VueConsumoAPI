@@ -13,7 +13,8 @@ const router = createRouter({
     {
       path: '/posts',
       name: 'posts',
-      component: () => import('../views/Posts/PostView.vue')
+      component: () => import('../views/Posts/PostView.vue'),
+      meta: { auth: true }
     },
     {
       path: '/categories',
@@ -36,12 +37,6 @@ const router = createRouter({
       name: 'register',
       component: () => import('../views/auth/RegisterView.vue'),
       meta: { guest: true }
-    },
-    {
-      path: '/create',
-      name: 'create',
-      component: () => import('../views/Posts/CreateView.vue'),
-      meta: { auth: true }
     }
   ]
 })
@@ -54,9 +49,9 @@ router.beforeEach(async (to, from) => {
     return { name: 'home' }
   }
 
-  if (!authStore.user && to.meta.auth) {
+  /* if (!authStore.user && to.meta.auth) {
     return { name: 'login' }
-  }
+  } */
 })
 
 export default router

@@ -2,6 +2,7 @@
 import { ref, watch, watchEffect, onMounted } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { usePostStore } from '@/stores/posts'
 
 const categories = ref([])
 const users = ref([])
@@ -22,6 +23,8 @@ const formData = ref({
   user_id: null,
   category_id: null
 })
+
+const postStore = usePostStore()
 
 // Observa los cambios en postData y actualiza formData
 watchEffect(() => {
@@ -64,32 +67,44 @@ function defineAction() {
   if (props.editMode) {
     handleUpdate()
   } else {
+    console.log(formData)
     handleSubmit()
   }
 }
 
 const handleSubmit = async () => {
-  try {
-    const response = await axios.post('/api/v1/posts', formData.value)
-    console.log(response)
+  await postStore.createPost(formData.value)
+
+  if (postStore.errors === null) {
     Swal.fire({
       title: 'Excelente!',
       text: 'Tu post ha sido creado!',
       icon: 'success'
     })
-    errors.value = null
     emit('updateList')
     closeModal()
-  } catch (error) {
-    console.error(error)
-    errors.value = error.response.data.errors
-    /* Swal.fire({
+  }
+}
+/* try {
+  const response = await axios.post('/api/v1/posts', formData.value)
+  console.log(response)
+  Swal.fire({
+    title: 'Excelente!',
+    text: 'Tu post ha sido creado!',
+    icon: 'success'
+  })
+  errors.value = null
+  emit('updateList')
+  closeModal()
+} catch (error) {
+  console.error(error)
+  errors.value = error.response.data.errors
+  Swal.fire({
       icon: 'error',
       title: 'Oops...',
       text: 'Algo salio mal!'
-    }) */
-  }
-}
+    })
+} */
 
 const handleUpdate = async () => {
   try {
@@ -131,6 +146,7 @@ function closeModal() {
   emit('update:isVisible', false)
   emit('update:editMode', null)
   emit('update:postData', {})
+  postStore.errors = {}
 }
 
 onMounted(() => {
@@ -144,7 +160,7 @@ onMounted(() => {
     class="fixed bg-gray-800 bg-opacity-80 top-20 bottom-0 left-0 right-0 grid place-items-center"
     v-if="isVisible"
   >
-    <div class="bg-white relative text-black w-2/5 p-10 rounded-lg">
+    <div class="bg-white relative text-black w-2/5 p-10 rounded-lg max-h-full overflow-y-auto">
       <span
         class="absolute h-12 w-12 flex justify-center items-center top-0 right-0 text-5xl cursor-pointer"
         @click="closeModal"
@@ -154,16 +170,6 @@ onMounted(() => {
         <h2 class="font-semibold text-3xl mb-8">
           {{ !editMode ? 'Nuevo Post' : 'Editar Post' }}
         </h2>
-
-        <ul class="mb-5">
-          <li v-if="errors" class="text-red-500">
-            <ul>
-              <li v-for="(error, index) in errors" :key="index">
-                {{ error[0] }}
-              </li>
-            </ul>
-          </li>
-        </ul>
 
         <!-- <h2 v-else class="font-semibold text-3xl mb-8">Editar Categoria</h2> -->
         <div class="mb-5">
@@ -179,6 +185,7 @@ onMounted(() => {
             placeholder="Escribe un titulo"
             class="bg-gray-50 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           />
+          <p v-if="postStore.errors.title" class="text-red-500">{{ postStore.errors.title[0] }}</p>
         </div>
 
         <div class="mb-5">
@@ -194,6 +201,7 @@ onMounted(() => {
             class="bg-gray-50 border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             readonly
           />
+          <p v-if="postStore.errors.slug" class="text-red-500">{{ postStore.errors.slug[0] }}</p>
         </div>
 
         <div class="mb-5">
@@ -209,6 +217,9 @@ onMounted(() => {
             class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="Escribe un breve extracto"
           ></textarea>
+          <p v-if="postStore.errors.extract" class="text-red-500">
+            {{ postStore.errors.extract[0] }}
+          </p>
         </div>
 
         <div class="mb-5">
@@ -224,9 +235,10 @@ onMounted(() => {
             class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="Escribe contenido"
           ></textarea>
+          <p v-if="postStore.errors.body" class="text-red-500">{{ postStore.errors.body[0] }}</p>
         </div>
 
-        <div class="mb-5">
+        <!-- <div class="mb-5">
           <label for="users" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
             >Autor:</label
           >
@@ -240,7 +252,7 @@ onMounted(() => {
               {{ user.name }}
             </option>
           </select>
-        </div>
+        </div> -->
 
         <div class="mb-5">
           <label
@@ -258,6 +270,9 @@ onMounted(() => {
               {{ category.name }}
             </option>
           </select>
+          <p v-if="postStore.errors.category_id" class="text-red-500">
+            {{ postStore.errors.category_id[0] }}
+          </p>
         </div>
 
         <div class="mb -5">

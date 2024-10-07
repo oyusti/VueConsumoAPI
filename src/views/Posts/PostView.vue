@@ -4,34 +4,45 @@ import { ref, onMounted } from 'vue'
 import PostModal from './PostModal.vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { usePostStore } from '@/stores/posts'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
-onMounted(() => {
-  getData()
-})
-
-const posts = ref([])
+//const posts = ref([])
 const isModalVisible = ref(false)
 const editMode = ref()
 const selectedPost = ref({})
+const router = useRouter()
 
-const getData = async () => {
-  //loading = true // Activar el loader
-  await axios.get('/api/v1/posts').then((response) => (posts.value = response.data.data))
-}
+const postStore = usePostStore()
+const authStore = useAuthStore()
+
+onMounted(() => {
+  postStore.getData()
+})
 
 /* const statusText = computed((post) => {
   return post.status == 1 ? 'Publicado' : 'Borrador'
 }) */
 
 function showModal(post = null) {
-  if (post == null) {
-    editMode.value = false
-    selectedPost.value = {}
-    isModalVisible.value = true
+  if (authStore.user && Object.keys(authStore.user).length > 0) {
+    if (post == null) {
+      editMode.value = false
+      selectedPost.value = {}
+      isModalVisible.value = true
+    } else {
+      editMode.value = true
+      selectedPost.value = post
+      isModalVisible.value = true
+    }
   } else {
-    editMode.value = true
-    selectedPost.value = post
-    isModalVisible.value = true
+    Swal.fire({
+      title: 'Error!',
+      text: 'Debes iniciar sesion para continuar',
+      icon: 'error'
+    })
+    router.push({ name: 'login' })
   }
 }
 
@@ -56,7 +67,7 @@ function deleteCategory(post) {
             text: 'Tu registro ha sido borrado.',
             icon: 'success'
           })
-          getData()
+          postStore.getData()
         } catch (error) {
           console.error(error)
         }
@@ -83,7 +94,7 @@ function deleteCategory(post) {
         v-model:editMode="editMode"
         v-model:isVisible="isModalVisible"
         v-model:postData="selectedPost"
-        @updateList="getData"
+        @updateList="postStore.getData"
       />
     </div>
     <table class="w-full text-sm text-center rtl:text-right text-gray-700 dark:text-gray-400">
@@ -92,17 +103,18 @@ function deleteCategory(post) {
       >
         <tr>
           <th scope="col" class="px-6 py-3 font-semibold">Titulo</th>
-          <th scope="col" class="px-6 py-3 font-semibold">Slug</th>
-          <!-- <th scope="col" class="px-6 py-3 font-semibold">Autor</th>
+          <th scope="col" class="px-6 py-3 font-semibold">Autor</th>
+          <!--<th scope="col" class="px-6 py-3 font-semibold">Slug</th>
+           
             <th scope="col" class="px-6 py-3 font-semibold">Categoria</th> -->
           <th scope="col" class="px-6 py-3 font-semibold">Estatus</th>
           <th scope="col" class="px-6 py-3 font-semibold">Fecha de creación</th>
           <th scope="col" class="px-6 py-3 font-semibold">Acciones</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody v-if="postStore.posts.length > 0">
         <tr
-          v-for="post in posts"
+          v-for="post in postStore.posts"
           :key="post.id"
           class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
         >
@@ -110,7 +122,7 @@ function deleteCategory(post) {
             {{ post.title }}
           </td>
           <td class="px-6 py-4">
-            {{ post.slug }}
+            {{ post.user.name }}
           </td>
           <td class="px-6 py-4">
             {{ post.status == 1 ? 'Borrador' : 'Publicado' }}
