@@ -26,7 +26,7 @@ export const useAuthStore = defineStore('authStore', () => {
         user.value = null
       }
     } catch (error) {
-      console.log(error)
+      errors.value = error.response.data.errors
     }
   }
 
@@ -40,16 +40,12 @@ export const useAuthStore = defineStore('authStore', () => {
         errors.value = {} // Clear errors
         localStorage.setItem('token', response.data.token) // Save token to local storage
         user.value = response.data.user // Save user to store
-        console.log(user) // Log user
         router.push({ name: 'home' })
       }
-      console.log(response)
     } catch (error) {
       if (error.response && error.response.data) {
         errors.value = error.response.data.errors // Save errors to store
-        console.log(errors.value)
       }
-      console.log(errors)
     }
   }
 
@@ -73,7 +69,7 @@ export const useAuthStore = defineStore('authStore', () => {
         router.push({ name: 'home' })
       }
     } catch (error) {
-      console.log(error)
+      errors.value = error.response.data.errors
     }
   }
 

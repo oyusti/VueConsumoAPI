@@ -1,11 +1,8 @@
 <script setup>
 import { ref, watch, watchEffect, onMounted } from 'vue'
-import axios from 'axios'
 import Swal from 'sweetalert2'
 import { usePostStore } from '@/stores/posts'
 
-const categories = ref([])
-const users = ref([])
 const isToggled = ref('1')
 const errors = ref(null)
 const props = defineProps({
@@ -29,7 +26,6 @@ const postStore = usePostStore()
 // Observa los cambios en postData y actualiza formData
 watchEffect(() => {
   if (props.editMode && props.postData) {
-    console.log(props.postData)
     formData.value = { ...props.postData }
     formData.value.user_id = props.postData.user.id
     formData.value.category_id = props.postData.category.id
@@ -67,7 +63,6 @@ function defineAction() {
   if (props.editMode) {
     handleUpdate()
   } else {
-    console.log(formData)
     handleSubmit()
   }
 }
@@ -85,61 +80,31 @@ const handleSubmit = async () => {
     closeModal()
   }
 }
-/* try {
-  const response = await axios.post('/api/v1/posts', formData.value)
-  console.log(response)
-  Swal.fire({
-    title: 'Excelente!',
-    text: 'Tu post ha sido creado!',
-    icon: 'success'
-  })
-  errors.value = null
-  emit('updateList')
-  closeModal()
-} catch (error) {
-  console.error(error)
-  errors.value = error.response.data.errors
-  Swal.fire({
-      icon: 'error',
-      title: 'Oops...',
-      text: 'Algo salio mal!'
-    })
-} */
 
 const handleUpdate = async () => {
   try {
-    const response = await axios.put('/api/v1/posts/' + formData.value.id, formData.value)
-    console.log(response)
-    Swal.fire({
-      title: 'Excelente!',
-      text: 'Su post ha sido actualizado!',
-      icon: 'success'
-    })
-    errors.value = null
-    emit('updateList')
-    closeModal()
+    await postStore.updatePost(formData.value.id, formData.value)
+    if (postStore.errors === null) {
+      Swal.fire({
+        title: 'Excelente!',
+        text: 'Tu post ha sido actualizado!',
+        icon: 'success'
+      })
+      emit('updateList')
+      errors.value = null
+      closeModal()
+    }
   } catch (error) {
-    console.error(error)
     errors.value = error.response.data.errors
-    /* Swal.fire({
+    Swal.fire({
       icon: 'error',
       title: 'Oops...',
       text: 'Algo salio mal!'
-    }) */
+    })
   }
 }
 
 const emit = defineEmits(['update:isVisible', 'update:editMode', 'update:postData', 'updateList'])
-
-const getCategory = async () => {
-  //loading = true // Activar el loader
-  await axios.get('/api/v1/categories').then((response) => (categories.value = response.data.data))
-}
-
-const getUsers = async () => {
-  //loading = true // Activar el loader
-  await axios.get('/api/v1/users').then((response) => (users.value = response.data.data))
-}
 
 function closeModal() {
   /* isVisible.value = false */
@@ -150,8 +115,7 @@ function closeModal() {
 }
 
 onMounted(() => {
-  getCategory()
-  getUsers()
+  postStore.getCategories()
 })
 </script>
 
@@ -266,7 +230,11 @@ onMounted(() => {
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           >
             <option value="" disabled selected>Seleccione una categoria</option>
-            <option v-for="category in categories" :key="category.id" :value="category.id">
+            <option
+              v-for="category in postStore.categories"
+              :key="category.id"
+              :value="category.id"
+            >
               {{ category.name }}
             </option>
           </select>

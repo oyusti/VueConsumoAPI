@@ -17,6 +17,11 @@ const router = createRouter({
       meta: { auth: true }
     },
     {
+      path: '/show/:id',
+      name: 'show',
+      component: () => import('../views/Posts/ShowView.vue')
+    },
+    {
       path: '/categories',
       name: 'categories',
       component: () => import('../views/Categories/CategoryView.vue')
